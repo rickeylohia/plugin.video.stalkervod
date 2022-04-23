@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.stalkervod" name="Stalker VOD Client" version="0.0.1-beta" provider-name="rickey">
+	<requires>
+		<import addon="script.module.requests"/>
+		<import addon="script.module.simplecache" version="1.0.20" />
+	</requires>
+	<extension point="xbmc.python.pluginsource" library="addon.py">
+		<provides>video</provides>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<platform>all</platform>
+		<summary lang="en">Stalker VOD Client</summary>
+		<description lang="en">Kodi Stalker client for accessing on demand videos from Stalker middleware</description>
+		<license>MIT</license>
+		<language></language>
+		<forum></forum>
+		<source></source>
+		<website></website>
+		<email></email>
+		<assets>
+			<icon>resources/media/icon.jpeg</icon>
+		</assets>
+		<news></news>
+	</extension>
+</addon>
