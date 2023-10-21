@@ -1,0 +1,19 @@
+{
+    "js": [
+        {
+            "id": "*",
+            "title": "All",
+            "alias": "*"
+        },
+        {
+            "id": "12",
+            "title": "ENGLISH MOVIES | LATEST",
+            "alias": "ENGLISH_MOVIES__LATEST"
+        },
+        {
+            "id": "15",
+            "title": "ENGLISH TV SHOW",
+            "alias": "ENGLISH_TV_SHOW"
+        }
+    ]
+}

@@ -1,0 +1,57 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Build and test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  issues: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    name: Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.11.2
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11.2"
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install libxml2-utils
+        pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+    - name: Test and build
+      run: |
+        make build
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: test-results/**/*.xml
+    - uses: codecov/codecov-action@v3
+      with:
+        token: f4617aa6-ff83-492e-a8d2-19af56aa1cf7
+        files: coverage.xml
+    - name: Set artifact name
+      run: |
+        basename build/*.zip
+        echo "ARTIFACT_NAME=$(basename build/*.zip)" >> $GITHUB_ENV
+    - name: Upload ${{ env.ARTIFACT_NAME }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.ARTIFACT_NAME }}
+        path: build/${{ env.ARTIFACT_NAME }}
+        retention-days: 5

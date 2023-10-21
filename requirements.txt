@@ -1,0 +1,7 @@
+requests
+pylint
+pytest
+sakee
+mock
+kodi-addon-checker
+coverage
