@@ -1,0 +1,9 @@
+coverage:
+  status:
+    project:
+      default:
+        target: 95%
+        threshold: 0%
+        branches:
+          - master
+        if_ci_failed: error

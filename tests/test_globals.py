@@ -26,7 +26,7 @@ class TestGlobals(unittest.TestCase):
         self.assertEqual(G.addon_config.addon_data_path, os.getcwd())
         self.assertEqual(G.addon_config.token_path, os.path.join(os.getcwd(), 'resources', 'tokens'))
         self.assertEqual(G.portal_config.mac_cookie, 'mac=00:2D:73:68:91:11')
-        self.assertEqual(G.portal_config.portal_url, 'http://xyz.com/stalker_portal//')
+        self.assertEqual(G.portal_config.portal_url, 'http://xyz.com/stalker_portal/c/')
         self.assertEqual(G.portal_config.device_id, 'SUEHFIOHR23IYR2U39U298EUDOIWHJDOIWEJHDIOHJWE')
         self.assertEqual(G.portal_config.device_id_2, '9384UR9UJFHJSDIFH9348EYFIUWDHFIHWDIFHEDHFE')
         self.assertEqual(G.portal_config.signature, '9834UROIWEHDJEFKIJHDF983EUFISDHFDKHJFKSJDHFKS')
