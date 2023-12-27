@@ -10,8 +10,8 @@
 	<extension point="xbmc.addon.metadata">
 		<reuselanguageinvoker>true</reuselanguageinvoker>
 		<platform>all</platform>
-		<summary lang="en">Stalker VOD Client</summary>
-		<description lang="en">Kodi Stalker client for accessing on demand videos and channels from Stalker middleware</description>
+		<summary lang="en_GB">Stalker VOD Client</summary>
+		<description lang="en_GB">Kodi Stalker client for accessing on demand videos and channels from Stalker middleware</description>
 		<license>GPL-3.0-or-later</license>
 		<language>en</language>
 		<source>https://github.com/rickeylohia/plugin.video.stalkervod</source>

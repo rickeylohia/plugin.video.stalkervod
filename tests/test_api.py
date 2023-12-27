@@ -120,7 +120,7 @@ class TestApi(unittest.TestCase):
     def test_get_videos(self, requests_get_mock):
         """Test get_videos"""
         requests_get_mock.side_effect = mock_requests_get
-        videos = get_videos(1, 1, '')
+        videos = get_videos(1, 1, '', 0)
         self.assertEqual(videos['total_items'], '1')
         self.assertEqual(len(videos['data']), 1)
         self.assertEqual(videos['data'][0]['name'], 'The Blacklist S10')
