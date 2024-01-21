@@ -24,7 +24,7 @@ class TestGlobals(unittest.TestCase):
         self.assertEqual(G.addon_config.url, 'plugin://plugin.video.stalkervod/')
         self.assertEqual(G.addon_config.addon_id, 'plugin.video.stalkervod')
         self.assertEqual(G.addon_config.addon_data_path, os.getcwd())
-        self.assertEqual(G.addon_config.token_path, os.path.join(os.getcwd(), 'resources', 'tokens'))
+        self.assertEqual(G.addon_config.token_path, os.path.join(os.getcwd(), 'tests/userdata/addon_data/plugin.video.stalkervod'))
         self.assertEqual(G.portal_config.mac_cookie, 'mac=00:2D:73:68:91:11')
         self.assertEqual(G.portal_config.portal_url, 'http://xyz.com/stalker_portal/c/')
         self.assertEqual(G.portal_config.device_id, 'SUEHFIOHR23IYR2U39U298EUDOIWHJDOIWEJHDIOHJWE')
@@ -33,11 +33,6 @@ class TestGlobals(unittest.TestCase):
         self.assertEqual(G.portal_config.serial_number, '02983409283402')
         self.assertEqual(G.portal_config.portal_base_url, 'http://xyz.com')
         self.assertEqual(G.portal_config.context_path, '/stalker_portal/server/load.php')
-
-    def test_get_portal_base_url(self):
-        """Test get portal base url"""
-        base_url = G.get_portal_base_url('http://www.portal.com/stalker_portal/c/')
-        self.assertEqual(base_url, 'http://www.portal.com', 'Invalid base url')
 
     def test_get_handle(self):
         """Test get_handle"""
