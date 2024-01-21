@@ -3,8 +3,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 import logging
-from lib.api import (get_categories, get_tv_genres, remove_favorites, add_favorites, get_vod_favorites,
-                     get_tv_channels, get_videos, get_vod_stream_url, get_tv_stream_url)
+from lib.api import Api
 from lib.globals import G
 
 _LOGGER = logging.getLogger(__name__)
@@ -47,7 +46,7 @@ def mock_requests_factory(response_stub: str, status_code: int = 200):
     """factory method that cranks out the Mocks"""
     return Mock(**{
         'json.return_value': json.loads(response_stub),
-        'text.return_value': response_stub,
+        'text': response_stub,
         'status_code': status_code,
         'ok': status_code == 200
     })
@@ -79,10 +78,10 @@ class TestApi(unittest.TestCase):
         G.init_globals()
 
     @patch('requests.get')
-    def test_get_categories(self, requests_get_mock):
-        """Test get_categories"""
+    def test_get_vod_categories(self, requests_get_mock):
+        """Test get_vod_categories"""
         requests_get_mock.side_effect = mock_requests_get
-        categories = get_categories()
+        categories = Api.get_vod_categories()
         self.assertEqual(len(categories), 3)
         self.assertEqual(categories[0]['id'], '*')
         self.assertEqual(categories[0]['title'], 'All')
@@ -96,7 +95,7 @@ class TestApi(unittest.TestCase):
     def test_get_tv_genres(self, requests_get_mock):
         """Test get_tv_genres"""
         requests_get_mock.side_effect = mock_requests_get
-        genres = get_tv_genres()
+        genres = Api.get_tv_genres()
         self.assertEqual(len(genres), 3)
         self.assertEqual(genres[0]['id'], '*')
         self.assertEqual(genres[0]['title'], 'All')
@@ -110,7 +109,7 @@ class TestApi(unittest.TestCase):
     def test_get_vod_favorites(self, requests_get_mock):
         """Test get_vod_favorites"""
         requests_get_mock.side_effect = mock_requests_get
-        favorites = get_vod_favorites(1)
+        favorites = Api.get_vod_favorites(1)
         self.assertEqual(favorites['total_items'], '1')
         self.assertEqual(len(favorites['data']), 1)
         self.assertEqual(favorites['data'][0]['name'], 'The Blacklist S10')
@@ -120,7 +119,7 @@ class TestApi(unittest.TestCase):
     def test_get_videos(self, requests_get_mock):
         """Test get_videos"""
         requests_get_mock.side_effect = mock_requests_get
-        videos = get_videos(1, 1, '', 0)
+        videos = Api.get_videos(1, 1, '', 0)
         self.assertEqual(videos['total_items'], '1')
         self.assertEqual(len(videos['data']), 1)
         self.assertEqual(videos['data'][0]['name'], 'The Blacklist S10')
@@ -130,7 +129,7 @@ class TestApi(unittest.TestCase):
     def test_get_tv_channels(self, requests_get_mock):
         """Test get_tv_channels"""
         requests_get_mock.side_effect = mock_requests_get
-        channels = get_tv_channels(1, 1)
+        channels = Api.get_tv_channels(1, 1)
         self.assertEqual(channels['total_items'], '1')
         self.assertEqual(len(channels['data']), 1)
         self.assertEqual(channels['data'][0]['name'], 'USA NETWORK')
@@ -140,7 +139,7 @@ class TestApi(unittest.TestCase):
     def test_get_vod_stream_url(self, requests_get_mock):
         """Test get_vod_stream_url"""
         requests_get_mock.side_effect = mock_requests_get
-        stream_url = get_vod_stream_url('3232', 1)
+        stream_url = Api.get_vod_stream_url('3232', 1)
         self.assertEqual(stream_url, 'http://video.cmd/ENGS/The.Blacklist.S10E03.mp4/playlist.m3u8?token=o832u4rkjsndfhoi348uyr3')
         self.assertTrue(requests_get_mock.called)
 
@@ -148,7 +147,7 @@ class TestApi(unittest.TestCase):
     def test_get_tv_stream_url(self, requests_get_mock):
         """Test get_tv_stream_url"""
         requests_get_mock.side_effect = mock_requests_get
-        stream_url = get_tv_stream_url(3232)
+        stream_url = Api.get_tv_stream_url(3232)
         self.assertEqual(stream_url, 'http://video.cmd/LoveNatureHDUSA/index.m3u8?token=o384uroiwkjsdnskfjs')
         self.assertTrue(requests_get_mock.called)
 
@@ -156,12 +155,12 @@ class TestApi(unittest.TestCase):
     def test_remove_favorites(self, requests_get_mock):
         """Test get_tv_genres"""
         requests_get_mock.side_effect = mock_requests_get
-        remove_favorites(122)
+        Api.remove_favorites(122)
         self.assertTrue(requests_get_mock.called)
 
     @patch('requests.get')
     def test_add_favorites(self, requests_get_mock):
         """Test get_tv_genres"""
         requests_get_mock.side_effect = mock_requests_get
-        add_favorites(122)
+        Api.add_favorites(122)
         self.assertTrue(requests_get_mock.called)
