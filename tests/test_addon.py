@@ -20,6 +20,7 @@ class TestStalkerAddon(unittest.TestCase):
 
     @patch('lib.addon.xbmc')
     @patch('lib.addon.Api')
+    @patch('sys.argv', ['plugin://plugin.video.stalkervod/', '1'])
     def test_run(self, mock_api, mock_xbmc):
         """Test run"""
         run(['plugin://plugin.video.stalkervod/', '1', '?action=add_fav&video_id=1234'])
