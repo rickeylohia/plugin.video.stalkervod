@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import xbmcgui
 import xbmcaddon
-from .logger import Logger
+from .loggers import Logger
 
 __addon__ = xbmcaddon.Addon()
 

@@ -1,7 +1,4 @@
-"""
-Compatible with Kodi 19.x "Matrix" and above
-"""
-from __future__ import absolute_import, division, unicode_literals
+"""Test Module for addon.py"""
 import unittest
 from unittest.mock import patch
 from lib.addon import StalkerAddon, run

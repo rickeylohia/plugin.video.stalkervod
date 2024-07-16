@@ -8,7 +8,7 @@ import math
 import requests
 from .globals import G
 from .auth import Auth
-from .logger import Logger
+from .loggers import Logger
 
 
 class Api:

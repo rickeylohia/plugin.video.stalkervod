@@ -7,7 +7,7 @@ import requests
 import xbmcvfs
 import xbmcgui
 from .globals import G
-from .logger import Logger
+from .loggers import Logger
 
 
 @dataclasses.dataclass

@@ -7,7 +7,7 @@ from urllib.parse import urlencode, urlsplit
 import dataclasses
 import xbmcaddon
 import xbmcvfs
-from .logger import Logger
+from .loggers import Logger
 
 
 @dataclasses.dataclass

@@ -29,6 +29,17 @@ class StalkerAddon:
         """Play video"""
         stream_url = Api.get_vod_stream_url(params['video_id'], params['series'], params.get('cmd', ''), params.get('use_cmd', '0'))
         play_item = xbmcgui.ListItem(path=stream_url)
+        video_info = play_item.getVideoInfoTag()
+        title = params.get('title', '')
+        video_info.setTitle(title)
+        video_info.setOriginalTitle(title)
+        video_info.setMediaType('movie')
+        episode_no = get_int_value(params, 'series')
+        if episode_no > 0:
+            video_info.setEpisode(episode_no)
+            video_info.setSeason(get_int_value(params, 'season_no'))
+            video_info.setMediaType('episode')
+            video_info.setTvShowTitle(title)
         xbmcplugin.setResolvedUrl(G.get_handle(), True, listitem=play_item)
 
     @staticmethod
@@ -252,7 +263,7 @@ class StalkerAddon:
                 is_folder = True
                 video_info.setMediaType('season')
             else:
-                url = G.get_plugin_url({'action': 'play', 'video_id': video['id'], 'series': 0, 'cmd': video.get('cmd', '')})
+                url = G.get_plugin_url({'action': 'play', 'video_id': video['id'], 'series': 0, 'title': video['name'], 'cmd': video.get('cmd', '')})
                 time = get_int_value(video, 'time')
                 if time != 0:
                     video_info.setDuration(time * 60)

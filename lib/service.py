@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 from urllib.parse import urlsplit, parse_qsl, urlencode
 import xbmc
 from xbmc import Monitor, Player, getInfoLabel
-from .logger import Logger
+from .loggers import Logger
 from .utils import get_int_value, get_next_info_and_send_signal
 
 
