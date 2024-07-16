@@ -58,11 +58,14 @@ def mock_requests_get(**kwargs):
     if kwargs['url'].endswith('/stalker_portal/server/load.php'):
         if params['action'] == 'handshake' and params['type'] == 'stb' \
                 and str(kwargs['headers']) == "{'Cookie': 'mac=00:2D:73:68:91:11', 'X-User-Agent': 'Model: MAG250; " \
-                                              "Link: WiFi', 'Referrer': 'http://xyz.com/stalker_portal/c/'}":
+                                              "Link: WiFi', 'Referrer': 'http://xyz.com/stalker_portal/c/', " \
+                                              "'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 " \
+                                              "(KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}":
             return mock_requests_factory(json.dumps(TOKEN))
-        if str(kwargs['headers']) == "{'Cookie': 'mac=00:2D:73:68:91:11', 'Authorization': 'Bearer " \
+        if str(kwargs['headers']) == "{'Cookie': 'mac=00:2D:73:68:91:11', 'SN': '02983409283402', 'Authorization': 'Bearer " \
                                      "78236487Y2WEUHE7Y278YDUHEDI', 'X-User-Agent': 'Model: MAG250; Link: WiFi', " \
-                                     "'Referrer': 'http://xyz.com/stalker_portal/c/'}":
+                                     "'Referrer': 'http://xyz.com/stalker_portal/c/', 'User-Agent': 'Mozilla/5.0 " \
+                                     "(QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}":
             return mock_requests_factory(json.dumps(ACTION_RESPONSE_DICT.get(params['type']).get(params['action'])))
     raise MockNotSupported
 
@@ -129,7 +132,7 @@ class TestApi(unittest.TestCase):
     def test_get_tv_channels(self, requests_get_mock):
         """Test get_tv_channels"""
         requests_get_mock.side_effect = mock_requests_get
-        channels = Api.get_tv_channels(1, 1)
+        channels = Api.get_tv_channels(1, 1, '', 0)
         self.assertEqual(channels['total_items'], '1')
         self.assertEqual(len(channels['data']), 1)
         self.assertEqual(channels['data'][0]['name'], 'USA NETWORK')
@@ -139,7 +142,7 @@ class TestApi(unittest.TestCase):
     def test_get_vod_stream_url(self, requests_get_mock):
         """Test get_vod_stream_url"""
         requests_get_mock.side_effect = mock_requests_get
-        stream_url = Api.get_vod_stream_url('3232', 1)
+        stream_url = Api.get_vod_stream_url('3232', 1, 'cmd', 0)
         self.assertEqual(stream_url, 'http://video.cmd/ENGS/The.Blacklist.S10E03.mp4/playlist.m3u8?token=o832u4rkjsndfhoi348uyr3')
         self.assertTrue(requests_get_mock.called)
 
@@ -155,12 +158,12 @@ class TestApi(unittest.TestCase):
     def test_remove_favorites(self, requests_get_mock):
         """Test get_tv_genres"""
         requests_get_mock.side_effect = mock_requests_get
-        Api.remove_favorites(122)
+        Api.remove_favorites(122, 'vod')
         self.assertTrue(requests_get_mock.called)
 
     @patch('requests.get')
     def test_add_favorites(self, requests_get_mock):
         """Test get_tv_genres"""
         requests_get_mock.side_effect = mock_requests_get
-        Api.add_favorites(122)
+        Api.add_favorites(122, 'vod')
         self.assertTrue(requests_get_mock.called)

@@ -1,3 +1,5 @@
+ignore:
+  - "test_.*.py"
 coverage:
   status:
     project:

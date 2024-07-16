@@ -4,6 +4,7 @@
         <setting label="32002" type="lsep"/>
         <setting label="32003" type="text" id="server_address" value="http://xyz.com/stalker_portal/c/"/>
         <setting type="sep"/>
+        <setting label="32012" type="bool" id="alternative_context_path" default="false"/>
         <setting label="32004" type="lsep"/>
         <setting label="32005" type="text" id="mac_address" value="00:2D:73:68:91:11"/>
         <setting type="sep"/>

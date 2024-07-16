@@ -9,11 +9,11 @@ build_dir = build
 
 check: check-pylint
 
-check-pylint:
+check-pylint: clean
 	@echo "Running pylint"
 	$(PYTHON) -m pylint *.py lib/ tests/
 
-test:
+test: check
 	@echo "Running tests"
 	@mkdir $(KODI_PROFILE)/addon_data
 	@mkdir $(KODI_PROFILE)/addon_data/$(CURR_PROJECT_DIR)
@@ -22,7 +22,7 @@ test:
 	coverage run -m pytest -v tests --junitxml=test-results/junit.xml
 	@coverage xml
 
-build: clean check test
+build: test
 	@echo "Building new package"
 	@rm -rf $(build_dir)
 	@rm -rf resources/tokens
