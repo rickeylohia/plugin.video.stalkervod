@@ -191,7 +191,7 @@ class TestStalkerAddon(unittest.TestCase):
         mock_xbmcplugin.addDirectoryItem.assert_called()
         mock_xbmcplugin.endOfDirectory.assert_called()
         mock_api.get_tv_genres.assert_called()
-        self.assertEqual(mock_xbmcgui.ListItem.call_count, 3)
+        self.assertEqual(mock_xbmcgui.ListItem.call_count, 4)
 
     @patch('lib.addon.xbmcplugin')
     @patch('lib.addon.xbmcgui')
@@ -214,7 +214,7 @@ class TestStalkerAddon(unittest.TestCase):
         mock_xbmcplugin.addDirectoryItem.assert_called()
         mock_xbmcplugin.endOfDirectory.assert_called()
         mock_api.get_vod_categories.assert_called()
-        self.assertEqual(mock_xbmcgui.ListItem.call_count, 3)
+        self.assertEqual(mock_xbmcgui.ListItem.call_count, 4)
 
     @patch('lib.addon.xbmc')
     @patch('lib.addon.xbmcplugin')
@@ -461,3 +461,73 @@ class TestStalkerAddon(unittest.TestCase):
         params = 'action=series_search&category=English Movies'
         self.stalker_addon.router(params)
         mock_xbmc.executebuiltin.assert_called_with('Container.Update(plugin://plugin.video.stalkervod/?action=series_listing&category=English+Movies&update_listing=False&search_term=search_term&page=1)')
+
+    @patch('lib.addon.xbmcplugin')
+    @patch('lib.addon.xbmcgui')
+    @patch('lib.addon.Api')
+    def test_play_video_with_episode(self, mock_api, mock_xbmcgui, mock_xbmcplugin):
+        """Test play_video with episode information (covers lines 42-45)"""
+        mock_api.get_vod_stream_url.return_value = 'stream_url'
+        mock_list_item = mock_xbmcgui.ListItem.return_value
+        mock_video_info = mock_list_item.getVideoInfoTag.return_value
+
+        # Test with episode number > 0 to trigger episode-specific code
+        params = 'action=play&video_id=1234&series=5&season_no=2&title=Test Show'
+        self.stalker_addon.router(params)
+
+        # Verify episode-specific methods are called (lines 42-45)
+        mock_video_info.setEpisode.assert_called_with(5)
+        mock_video_info.setSeason.assert_called_with(2)
+        mock_video_info.setMediaType.assert_called_with('episode')
+        mock_video_info.setTvShowTitle.assert_called_with('Test Show')
+        mock_xbmcplugin.setResolvedUrl.assert_called()
+
+    @patch('lib.addon.xbmcplugin')
+    @patch('lib.addon.xbmcgui')
+    def test_list_episodes_movie_type(self, mock_xbmcgui, mock_xbmcplugin):
+        """Test list_episodes when name doesn't match season pattern (covers line 431)"""
+        mock_list_item = mock_xbmcgui.ListItem.return_value
+        mock_video_info = mock_list_item.getVideoInfoTag.return_value
+
+        # Test with name that doesn't end with season pattern (e.g., "S01")
+        params = 'action=sub_folder&name=Movie Title&start=1&end=1&poster_url=None&video_id=1234'
+        self.stalker_addon.router(params)
+
+        # Verify movie media type is set (line 431)
+        mock_video_info.setMediaType.assert_called_with('movie')
+        mock_xbmcplugin.setPluginCategory.assert_called_with(1, 'Movie Title')
+        mock_xbmcplugin.setContent.assert_called()
+
+    @patch('lib.addon.xbmcplugin')
+    @patch('lib.addon.xbmcgui')
+    @patch('lib.addon.Api')
+    @patch('lib.addon.ask_for_input')
+    def test_search_vod_non_context(self, mock_ask_for_input, mock_api, mock_xbmcgui, mock_xbmcplugin):  # pylint: disable=unused-argument
+        """Test search_vod with isContextMenuSearch=false (covers line 451)"""
+        mock_ask_for_input.return_value = 'search_term'
+        mock_api.get_videos.return_value = {'total_items': 0, 'max_page_items': 2, 'data': []}
+
+        # Test with isContextMenuSearch=false to trigger __list_vod call
+        params = 'action=vod_search&category=English Movies&category_id=1&page=1&isContextMenuSearch=false'
+        self.stalker_addon.router(params)
+
+        # Verify that __list_vod is called instead of executebuiltin (line 451)
+        mock_api.get_videos.assert_called()
+        mock_xbmcplugin.setPluginCategory.assert_called()
+
+    @patch('lib.addon.xbmcplugin')
+    @patch('lib.addon.xbmcgui')
+    @patch('lib.addon.Api')
+    @patch('lib.addon.ask_for_input')
+    def test_search_tv_non_context(self, mock_ask_for_input, mock_api, mock_xbmcgui, mock_xbmcplugin):  # pylint: disable=unused-argument
+        """Test search_tv with isContextMenuSearch=false (covers line 474)"""
+        mock_ask_for_input.return_value = 'search_term'
+        mock_api.get_tv_channels.return_value = {'total_items': 0, 'max_page_items': 2, 'data': []}
+
+        # Test with isContextMenuSearch=false to trigger __list_channels call
+        params = 'action=tv_search&category=English Channels&category_id=1&page=1&isContextMenuSearch=false'
+        self.stalker_addon.router(params)
+
+        # Verify that __list_channels is called instead of executebuiltin (line 474)
+        mock_api.get_tv_channels.assert_called()
+        mock_xbmcplugin.setPluginCategory.assert_called()

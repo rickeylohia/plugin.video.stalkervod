@@ -19,8 +19,9 @@ test: check
 	@mkdir $(KODI_PROFILE)/addon_data/$(CURR_PROJECT_DIR)
 	@cp $(KODI_PROFILE)/settings.xml $(KODI_PROFILE)/addon_data/$(CURR_PROJECT_DIR)
 	@mkdir test-results
-	coverage run -m pytest -v tests --junitxml=test-results/junit.xml
-	@coverage xml
+	coverage run --omit="tests/*,test_*.py" -m pytest -v tests --junitxml=test-results/junit.xml
+	@coverage xml --omit="tests/*,test_*.py"
+	@coverage report --omit="tests/*,test_*.py"
 
 build: test
 	@echo "Building new package"

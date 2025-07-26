@@ -41,9 +41,16 @@ jobs:
       if: always()
       with:
         files: test-results/**/*.xml
-    - uses: codecov/codecov-action@v3
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
       with:
-        token: f4617aa6-ff83-492e-a8d2-19af56aa1cf7
+        token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Upload converage results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         files: coverage.xml
     - name: Set artifact name
       run: |
