@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 import logging
 from lib.utils import (
     ask_for_input, get_int_value, get_next_info_and_send_signal,
-    upnext_signal, notify, jsonrpc, to_unicode, get_next_info
+    upnext_signal, notify, jsonrpc, to_unicode, get_next_info, ask_for_category_selection
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +49,53 @@ class TestAskForInput(unittest.TestCase):
 
         result = ask_for_input("Movies")
 
+        self.assertIsNone(result)
+
+
+class TestAskForCategorySelection(unittest.TestCase):
+    """Test ask_for_category_selection function"""
+
+    @patch('lib.utils.xbmcgui')
+    def test_ask_for_category_selection_success(self, mock_xbmcgui):
+        """Test ask_for_category_selection with successful selection"""
+        mock_dialog = Mock()
+        mock_xbmcgui.Dialog.return_value = mock_dialog
+        mock_dialog.select.return_value = 1  # Select second category
+
+        categories = [
+            {'id': '*', 'title': 'All'},
+            {'id': '1', 'title': 'Movies'},
+            {'id': '2', 'title': 'TV Shows'}
+        ]
+
+        result = ask_for_category_selection(categories, 'VOD')
+
+        self.assertEqual(result, {'id': '1', 'title': 'Movies'})
+        mock_dialog.select.assert_called_once_with('Select VOD Category', ['All', 'Movies', 'TV Shows'])
+
+    @patch('lib.utils.xbmcgui')
+    def test_ask_for_category_selection_cancelled(self, mock_xbmcgui):
+        """Test ask_for_category_selection when user cancels"""
+        mock_dialog = Mock()
+        mock_xbmcgui.Dialog.return_value = mock_dialog
+        mock_dialog.select.return_value = -1  # User cancelled
+
+        categories = [
+            {'id': '*', 'title': 'All'},
+            {'id': '1', 'title': 'Movies'}
+        ]
+
+        result = ask_for_category_selection(categories, 'VOD')
+
+        self.assertIsNone(result)
+        mock_dialog.select.assert_called_once_with('Select VOD Category', ['All', 'Movies'])
+
+    def test_ask_for_category_selection_empty_categories(self):
+        """Test ask_for_category_selection with empty categories"""
+        result = ask_for_category_selection([], 'VOD')
+        self.assertIsNone(result)
+
+        result = ask_for_category_selection(None, 'VOD')
         self.assertIsNone(result)
 
 

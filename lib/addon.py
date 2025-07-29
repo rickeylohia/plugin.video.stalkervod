@@ -9,7 +9,7 @@ import xbmc
 import xbmcgui
 import xbmcplugin
 from .globals import G
-from .utils import ask_for_input, get_int_value
+from .utils import ask_for_input, get_int_value, ask_for_category_selection
 from .api import Api
 from .loggers import Logger
 
@@ -66,7 +66,7 @@ class StalkerAddon:
         # Add search option
         list_item = xbmcgui.ListItem(label='SEARCH')
         list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
-        url = G.get_plugin_url({'action': 'tv_search', 'category': 'All', 'category_id': '*', 'fav': 0, 'isContextMenuSearch': False})
+        url = G.get_plugin_url({'action': 'tv_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
         genres = Api.get_tv_genres()
@@ -96,7 +96,7 @@ class StalkerAddon:
         # Add search option
         list_item = xbmcgui.ListItem(label='SEARCH')
         list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
-        url = G.get_plugin_url({'action': 'vod_search', 'category': 'All', 'category_id': '*', 'fav': 0, 'isContextMenuSearch': False})
+        url = G.get_plugin_url({'action': 'vod_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
         categories = Api.get_vod_categories()
@@ -120,6 +120,12 @@ class StalkerAddon:
 
         list_item = xbmcgui.ListItem(label='SERIES FAVORITES')
         url = G.get_plugin_url({'action': 'series_favorites', 'page': 1, 'update_listing': False})
+        xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
+
+        # Add search option
+        list_item = xbmcgui.ListItem(label='SEARCH')
+        list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
+        url = G.get_plugin_url({'action': 'series_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
         categories = Api.get_series_categories()
@@ -439,6 +445,20 @@ class StalkerAddon:
     def __search_vod(self, params):
         """Search for videos"""
         Logger.debug('Search VOD {}'.format(params))
+
+        # If category is missing, show category selection popup
+        if not params.get('category'):
+            categories = Api.get_vod_categories()
+            selected_category = ask_for_category_selection(categories, 'VOD')
+            if not selected_category:
+                # User cancelled category selection - end directory properly
+                xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
+                return
+            params.update({
+                'category': selected_category['title'],
+                'category_id': selected_category['id']
+            })
+
         search_term = ask_for_input(params['category'])
         if search_term:
             params.update({'action': 'vod_listing', 'update_listing': False, 'search_term': search_term, 'page': 1})
@@ -453,6 +473,20 @@ class StalkerAddon:
     @staticmethod
     def __search_series(params):
         """Search for videos"""
+
+        # If category is missing, show category selection popup
+        if not params.get('category'):
+            categories = Api.get_series_categories()
+            selected_category = ask_for_category_selection(categories, 'Series')
+            if not selected_category:
+                # User cancelled category selection - end directory properly
+                xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
+                return
+            params.update({
+                'category': selected_category['title'],
+                'category_id': selected_category['id']
+            })
+
         search_term = ask_for_input(params['category'])
         if search_term:
             params.update({'action': 'series_listing', 'update_listing': False, 'search_term': search_term, 'page': 1})
@@ -462,6 +496,20 @@ class StalkerAddon:
 
     def __search_tv(self, params):
         """Search for videos"""
+
+        # If category is missing, show category selection popup
+        if not params.get('category'):
+            genres = Api.get_tv_genres()
+            selected_genre = ask_for_category_selection(genres, 'TV')
+            if not selected_genre:
+                # User cancelled category selection - end directory properly
+                xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
+                return
+            params.update({
+                'category': selected_genre['title'],
+                'category_id': selected_genre['id']
+            })
+
         search_term = ask_for_input(params['category'])
         if search_term:
             params.update({'action': 'tv_listing', 'update_listing': False, 'search_term': search_term, 'page': 1})

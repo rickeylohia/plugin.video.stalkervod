@@ -16,6 +16,20 @@ def ask_for_input(category):
         type=xbmcgui.INPUT_ALPHANUM) or None
 
 
+def ask_for_category_selection(categories, content_type):
+    """Category selection dialog box"""
+    if not categories:
+        return None
+
+    category_titles = [category['title'] for category in categories]
+    dialog = xbmcgui.Dialog()
+    selected_index = dialog.select(f'Select {content_type} Category', category_titles)
+
+    if selected_index >= 0:
+        return categories[selected_index]
+    return None
+
+
 def get_int_value(dictionary, key):
     """Helper method to get int value"""
     if key in dictionary:
