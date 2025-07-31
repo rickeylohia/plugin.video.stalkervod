@@ -1,5 +1,7 @@
 ignore:
-  - "test_.*.py"
+  - "tests/**"
+  - "test_*.py"
+  - "**/test_*.py"
 coverage:
   status:
     project:
