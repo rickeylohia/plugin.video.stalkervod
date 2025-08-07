@@ -23,7 +23,7 @@ def ask_for_category_selection(categories, content_type):
 
     category_titles = [category['title'] for category in categories]
     dialog = xbmcgui.Dialog()
-    selected_index = dialog.select(f'Select {content_type} Category', category_titles)
+    selected_index = dialog.select(f'Select {content_type}', category_titles)
 
     if selected_index >= 0:
         return categories[selected_index]
@@ -78,7 +78,7 @@ def jsonrpc(**kwargs):
 
 
 def to_unicode(text, encoding='utf-8', errors='strict'):
-    """Force text to unicode"""
+    """Force text to Unicode"""
     if isinstance(text, bytes):
         return text.decode(encoding, errors=errors)
     return text

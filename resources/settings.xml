@@ -1,19 +1,68 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<settings>
-    <category label="32001">
-        <setting label="32002" type="lsep"/>
-        <setting label="32003" type="text" id="server_address" default=""/>
-        <setting type="sep"/>
-        <setting label="32011" type="lsep"/>
-        <setting label="32012" type="bool" id="alternative_context_path" default="false"/>
-        <setting type="sep"/>
-        <setting label="32004" type="lsep"/>
-        <setting label="32005" type="text" id="mac_address" default=""/>
-        <setting type="sep"/>
-        <setting label="32006" type="lsep"/>
-        <setting label="32007" type="text" id="serial_number" default=""/>
-        <setting label="32008" type="text" id="device_id" default=""/>
-        <setting label="32009" type="text" id="device_id_2" default=""/>
-        <setting label="32010" type="text" id="signature" default=""/>
-    </category>
+<settings version="1">
+    <section id="plugin.video.stalkervod">
+        <category id="portal" label="32001" help="">
+            <group id="server" label="32002">
+                <setting id="server_address" type="string" label="32003" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+            </group>
+
+            <group id="context" label="32004">
+                <setting id="alternative_context_path" type="boolean" label="32005" help="">
+                    <default>false</default>
+                    <level>0</level>
+                    <control type="toggle" />
+                </setting>
+            </group>
+
+            <group id="device_info" label="32006">
+                <setting id="mac_address" type="string" label="32007" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+            </group>
+
+            <group id="device_ids" label="32008">
+                <setting id="serial_number" type="string" label="32009" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+
+                <setting id="device_id" type="string" label="32010" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+
+                <setting id="device_id_2" type="string" label="32011" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+
+                <setting id="signature" type="string" label="32012" help="">
+                    <level>0</level>
+                    <constraints>
+                        <allowempty>true</allowempty>
+                    </constraints>
+                    <control type="edit" format="string" />
+                </setting>
+            </group>
+        </category>
+    </section>
 </settings>

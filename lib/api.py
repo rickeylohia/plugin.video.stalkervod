@@ -199,11 +199,14 @@ class Api:
                                                          )
 
     @staticmethod
-    def get_tv_stream_url(cmd):
+    def get_tv_stream_url(params):
         """Get TV Channel stream url"""
-        cmd = Api.__call_stalker_portal(
-            {'type': 'itv', 'action': 'create_link', 'cmd': cmd}
-        )['js']['cmd']
+        if bool(params.get('use_http_tmp_link', 0)) or bool(params.get('use_load_balancing', 0)):
+            cmd = Api.__call_stalker_portal(
+                {'type': 'itv', 'action': 'create_link', 'cmd': params['cmd']}
+            )['js']['cmd']
+        else:
+            cmd = params['cmd']
         if cmd.find(' ') != -1:
             cmd = cmd[(cmd.find(' ') + 1):]
         return cmd

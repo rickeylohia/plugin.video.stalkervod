@@ -46,16 +46,16 @@ class StalkerAddon:
         xbmcplugin.setResolvedUrl(G.get_handle(), True, listitem=play_item)
 
     @staticmethod
-    def __play_tv(cmd):
+    def __play_tv(params):
         """Play TV Channel"""
-        Logger.debug('Play TV {}'.format(cmd))
-        stream_url = Api.get_tv_stream_url(cmd)
+        Logger.debug('Play TV {}'.format(params))
+        stream_url = Api.get_tv_stream_url(params)
         play_item = xbmcgui.ListItem(path=stream_url)
         xbmcplugin.setResolvedUrl(G.get_handle(), True, listitem=play_item)
 
     @staticmethod
     def __list_tv_genres():
-        """List TV channel genres"""
+        """List the TV channel genres"""
         Logger.debug('List TV Genres')
         xbmcplugin.setPluginCategory(G.get_handle(), 'TV CHANNELS')
         xbmcplugin.setContent(G.get_handle(), 'videos')
@@ -63,8 +63,8 @@ class StalkerAddon:
         url = G.get_plugin_url({'action': 'tv_favorites', 'page': 1, 'update_listing': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
-        # Add search option
-        list_item = xbmcgui.ListItem(label='SEARCH')
+        # Add a search option
+        list_item = xbmcgui.ListItem(label='TV SEARCH')
         list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
         url = G.get_plugin_url({'action': 'tv_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
@@ -93,8 +93,8 @@ class StalkerAddon:
         url = G.get_plugin_url({'action': 'vod_favorites', 'page': 1, 'update_listing': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
-        # Add search option
-        list_item = xbmcgui.ListItem(label='SEARCH')
+        # Add a search option
+        list_item = xbmcgui.ListItem(label='VOD SEARCH')
         list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
         url = G.get_plugin_url({'action': 'vod_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
@@ -122,8 +122,8 @@ class StalkerAddon:
         url = G.get_plugin_url({'action': 'series_favorites', 'page': 1, 'update_listing': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
 
-        # Add search option
-        list_item = xbmcgui.ListItem(label='SEARCH')
+        # Add a search option
+        list_item = xbmcgui.ListItem(label='SERIES SEARCH')
         list_item.setArt({'thumb': G.get_custom_thumb_path('search.png')})
         url = G.get_plugin_url({'action': 'series_search', 'fav': 0, 'isContextMenuSearch': False})
         xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, True)
@@ -142,7 +142,7 @@ class StalkerAddon:
 
     @staticmethod
     def __list_channels(params):
-        """List TV Channels"""
+        """List the TV Channels"""
         Logger.debug('List Channels {}'.format(params))
         search_term = params.get('search_term', '')
         page = params['page']
@@ -173,7 +173,7 @@ class StalkerAddon:
                 list_item.addContextMenuItems([('Add to favorites', f'RunPlugin({url}, False)')])
             if 'logo' in video:
                 list_item.setArt({'icon': video['logo'], 'thumb': video['logo'], 'clearlogo': video['logo']})
-            url = G.get_plugin_url({'action': 'tv_play', 'cmd': video['cmd']})
+            url = G.get_plugin_url({'action': 'tv_play', 'cmd': video['cmd'], 'use_http_tmp_link': video.get('use_http_tmp_link', 0), 'use_load_balancing': video.get('use_load_balancing', 0)})
             directory_items.append((url, list_item, False))
         total_items = get_int_value(videos, 'total_items')
         if total_items > item_count:
@@ -446,10 +446,10 @@ class StalkerAddon:
         """Search for videos"""
         Logger.debug('Search VOD {}'.format(params))
 
-        # If category is missing, show category selection popup
+        # If the category is missing, show the category selection popup
         if not params.get('category'):
             categories = Api.get_vod_categories()
-            selected_category = ask_for_category_selection(categories, 'VOD')
+            selected_category = ask_for_category_selection(categories, 'VOD Category')
             if not selected_category:
                 # User cancelled category selection - end directory properly
                 xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
@@ -474,10 +474,10 @@ class StalkerAddon:
     def __search_series(params):
         """Search for videos"""
 
-        # If category is missing, show category selection popup
+        # If the category is missing, show the category selection popup
         if not params.get('category'):
             categories = Api.get_series_categories()
-            selected_category = ask_for_category_selection(categories, 'Series')
+            selected_category = ask_for_category_selection(categories, 'Series Category')
             if not selected_category:
                 # User cancelled category selection - end directory properly
                 xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
@@ -497,10 +497,10 @@ class StalkerAddon:
     def __search_tv(self, params):
         """Search for videos"""
 
-        # If category is missing, show category selection popup
+        # If the category is missing, show the category selection popup
         if not params.get('category'):
             genres = Api.get_tv_genres()
-            selected_genre = ask_for_category_selection(genres, 'TV')
+            selected_genre = ask_for_category_selection(genres, 'TV Genre')
             if not selected_genre:
                 # User cancelled category selection - end directory properly
                 xbmcplugin.endOfDirectory(G.get_handle(), succeeded=False, updateListing=False, cacheToDisc=False)
@@ -569,7 +569,7 @@ class StalkerAddon:
             elif params['action'] == 'play':
                 self.__play_video(params)
             elif params['action'] == 'tv_play':
-                self.__play_tv(params['cmd'])
+                self.__play_tv(params)
             elif params['action'] == 'vod_search':
                 self.__search_vod(params)
             elif params['action'] == 'series_search':

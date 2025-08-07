@@ -66,9 +66,9 @@ class TestStalkerAddon(unittest.TestCase):
     def test_play_tv(self, mock_api, mock_xbmcgui, mock_xbmcplugin):
         """Test play_tv"""
         mock_api.get_tv_stream_url.return_value = 'tv_stream_url'
-        params = 'action=tv_play&cmd=cmd'
+        params = 'action=tv_play&cmd=cmd&use_http_tmp_link=1'
         self.stalker_addon.router(params)
-        mock_api.get_tv_stream_url.assert_called_with('cmd')
+        mock_api.get_tv_stream_url.assert_called_with({'action': 'tv_play', 'cmd': 'cmd', 'use_http_tmp_link': '1'})
         mock_xbmcgui.ListItem.assert_called_with(path='tv_stream_url')
         mock_xbmcplugin.setResolvedUrl.assert_called()
 
@@ -153,7 +153,8 @@ class TestStalkerAddon(unittest.TestCase):
                                                      {
                                                          'id': 123,
                                                          'name': 'TV Channel',
-                                                         'cmd': 'ffrt http://localhost/ch/353'
+                                                         'cmd': 'ffrt http://localhost/ch/353',
+                                                         'use_http_tmp_link': 0
                                                      },
                                                      {
                                                          'id': 2222,
@@ -552,7 +553,7 @@ class TestStalkerAddon(unittest.TestCase):
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Movies'}], 'VOD'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Movies'}], 'VOD Category'
         )
         # Verify search input was called with selected category
         mock_ask_for_input.assert_called_once_with('Movies')
@@ -600,7 +601,7 @@ class TestStalkerAddon(unittest.TestCase):
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'English'}], 'TV'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'English'}], 'TV Genre'
         )
         # Verify search input was called with selected category
         mock_ask_for_input.assert_called_once_with('English')
@@ -642,15 +643,15 @@ class TestStalkerAddon(unittest.TestCase):
             {'id': '1', 'title': 'Drama'}
         ]
 
-        # Test with missing category to trigger category selection
+        # Test with the missing category to trigger category selection
         params = 'action=series_search'
         self.stalker_addon.router(params)
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Drama'}], 'Series'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Drama'}], 'Series Category'
         )
-        # Verify search input was called with selected category
+        # Verify search input was called with the selected category
         mock_ask_for_input.assert_called_once_with('Drama')
         # Verify executebuiltin was called
         mock_xbmc.executebuiltin.assert_called()
@@ -695,7 +696,7 @@ class TestStalkerAddon(unittest.TestCase):
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Movies'}], 'VOD'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Movies'}], 'VOD Category'
         )
         # Verify search input was called with selected category
         mock_ask_for_input.assert_called_once_with('Movies')
@@ -719,7 +720,7 @@ class TestStalkerAddon(unittest.TestCase):
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'English'}], 'TV'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'English'}], 'TV Genre'
         )
         # Verify search input was called with selected category
         mock_ask_for_input.assert_called_once_with('English')
@@ -743,7 +744,7 @@ class TestStalkerAddon(unittest.TestCase):
 
         # Verify category selection was called
         mock_ask_for_category_selection.assert_called_once_with(
-            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Drama'}], 'Series'
+            [{'id': '*', 'title': 'All'}, {'id': '1', 'title': 'Drama'}], 'Series Category'
         )
         # Verify search input was called with selected category
         mock_ask_for_input.assert_called_once_with('Drama')
