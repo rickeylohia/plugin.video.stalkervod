@@ -68,7 +68,7 @@ class TestAskForCategorySelection(unittest.TestCase):
             {'id': '2', 'title': 'TV Shows'}
         ]
 
-        result = ask_for_category_selection(categories, 'VOD')
+        result = ask_for_category_selection(categories, 'VOD Category')
 
         self.assertEqual(result, {'id': '1', 'title': 'Movies'})
         mock_dialog.select.assert_called_once_with('Select VOD Category', ['All', 'Movies', 'TV Shows'])
@@ -85,7 +85,7 @@ class TestAskForCategorySelection(unittest.TestCase):
             {'id': '1', 'title': 'Movies'}
         ]
 
-        result = ask_for_category_selection(categories, 'VOD')
+        result = ask_for_category_selection(categories, 'VOD Category')
 
         self.assertIsNone(result)
         mock_dialog.select.assert_called_once_with('Select VOD Category', ['All', 'Movies'])

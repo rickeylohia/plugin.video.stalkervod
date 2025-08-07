@@ -53,6 +53,8 @@ class GlobalVariables:
         self.addon_config.url = sys.argv[0]
         if self.__is_addd_on_first_run:
             Logger.debug("First run, loading global variables")
+
+            # Initialize addon info
             self.addon_config.addon_id = self.__addon.getAddonInfo('id')
             self.addon_config.name = self.__addon.getAddonInfo('name')
             self.addon_config.addon_data_path = self.__addon.getAddonInfo('path')
@@ -61,6 +63,8 @@ class GlobalVariables:
                 xbmcvfs.mkdirs(token_path)
             self.addon_config.token_path = token_path
             self.addon_config.handle = int(sys.argv[1])
+
+            # Init Portal settings
             self.portal_config.mac_cookie = 'mac=' + self.__addon.getSetting('mac_address')
             self.portal_config.device_id = self.__addon.getSetting('device_id')
             self.portal_config.device_id_2 = self.__addon.getSetting('device_id_2')

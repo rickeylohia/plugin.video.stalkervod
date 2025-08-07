@@ -185,9 +185,25 @@ class TestApi(unittest.TestCase):
     def test_get_tv_stream_url(self, requests_get_mock):
         """Test get_tv_stream_url"""
         requests_get_mock.side_effect = mock_requests_get
-        stream_url = Api.get_tv_stream_url(3232)
+        stream_url = Api.get_tv_stream_url({'cmd': 3232, 'use_http_tmp_link': 1})
         self.assertEqual(stream_url, 'http://video.cmd/LoveNatureHDUSA/index.m3u8?token=o384uroiwkjsdnskfjs')
         self.assertTrue(requests_get_mock.called)
+
+    @patch('requests.get')
+    def test_get_tv_stream_url2(self, requests_get_mock):
+        """Test get_tv_stream_url"""
+        requests_get_mock.side_effect = mock_requests_get
+        stream_url = Api.get_tv_stream_url({'cmd': 3232, 'use_load_balancing': 1})
+        self.assertEqual(stream_url, 'http://video.cmd/LoveNatureHDUSA/index.m3u8?token=o384uroiwkjsdnskfjs')
+        self.assertTrue(requests_get_mock.called)
+
+    @patch('requests.get')
+    def test_get_tv_stream_url3(self, requests_get_mock):
+        """Test get_tv_stream_url"""
+        requests_get_mock.side_effect = mock_requests_get
+        stream_url = Api.get_tv_stream_url({'cmd': '3232'})
+        self.assertEqual(stream_url, '3232')
+        self.assertFalse(requests_get_mock.called)
 
     @patch('requests.get')
     def test_remove_favorites(self, requests_get_mock):
@@ -450,7 +466,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(vod_url, 'http://video.cmd/stream.m3u8?token=abc123')
 
         # Test TV stream URL space trimming
-        tv_url = Api.get_tv_stream_url('cmd')
+        tv_url = Api.get_tv_stream_url({'cmd': 'cmd', 'use_load_balancing': 1})
         self.assertEqual(tv_url, 'http://video.cmd/stream.m3u8?token=abc123')
 
     @patch('requests.get')

@@ -49,7 +49,7 @@ class TestBackgroundService(unittest.TestCase):
         # Mock abortRequested to return False first few times, then True
         abort_requested_mock = Mock(side_effect=[False, False, False, True])
         wait_for_abort_mock = Mock(side_effect=[False, False, False, True])
-        service.abortRequested = abort_requested_mock
+        setattr(service, 'abortRequested', abort_requested_mock)
         setattr(service, 'waitForAbort', wait_for_abort_mock)
 
         service.run()
@@ -69,7 +69,7 @@ class TestBackgroundService(unittest.TestCase):
         # Mock waitForAbort to return True immediately (to trigger the break on line 27)
         abort_requested_mock = Mock(return_value=False)
         wait_for_abort_mock = Mock(return_value=True)
-        service.abortRequested = abort_requested_mock
+        setattr(service, 'abortRequested', abort_requested_mock)
         setattr(service, 'waitForAbort', wait_for_abort_mock)
 
         service.run()
