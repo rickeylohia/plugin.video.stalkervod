@@ -14,8 +14,8 @@
 
             <group id="context" label="32004">
                 <setting id="alternative_context_path" type="boolean" label="32005" help="">
-                    <default>false</default>
                     <level>0</level>
+                    <default>false</default>
                     <control type="toggle" />
                 </setting>
             </group>

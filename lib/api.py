@@ -9,6 +9,7 @@ import requests
 from .globals import G
 from .auth import Auth
 from .loggers import Logger
+from .utils import get_int_value
 
 
 class Api:
@@ -201,7 +202,7 @@ class Api:
     @staticmethod
     def get_tv_stream_url(params):
         """Get TV Channel stream url"""
-        if bool(params.get('use_http_tmp_link', 0)) or bool(params.get('use_load_balancing', 0)):
+        if bool(get_int_value(params, 'use_http_tmp_link')) or bool(get_int_value(params, 'use_load_balancing')):
             cmd = Api.__call_stalker_portal(
                 {'type': 'itv', 'action': 'create_link', 'cmd': params['cmd']}
             )['js']['cmd']
