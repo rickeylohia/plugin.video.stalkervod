@@ -130,7 +130,7 @@ class Api:
     @staticmethod
     def get_seasons(video_id):
         """Get favorites"""
-        params = {'type': 'series', 'action': 'get_ordered_list', 'movie_id': video_id, 'sortby': 'added'}
+        params = {'type': 'vod','action': 'get_ordered_list','movie_id': video_id,'season_id': 0,'episode_id': 0,'p': 1,'JsHttpRequest': '1-xml'}
         return Api.__call_stalker_portal(params)['js']
 
     @staticmethod
@@ -211,3 +211,52 @@ class Api:
         if cmd.find(' ') != -1:
             cmd = cmd[(cmd.find(' ') + 1):]
         return cmd
+
+    @staticmethod
+    def get_series_items(video_id, season_id=0, category_id=None, page=1):
+        params = {
+            'type': 'vod',
+            'action': 'get_ordered_list',
+            'movie_id': str(video_id),
+            'season_id': str(season_id),
+            'episode_id': '0',
+            'row': '0',
+            'fav': '0',
+            'sortby': 'added',
+            'hd': '0',
+            'not_ended': '0',
+            'p': str(page),
+        }
+
+        if category_id is not None:
+            params['category'] = str(category_id)
+
+        return Api.__call_stalker_portal(params)['js']
+
+    @staticmethod
+    def get_episode_files(video_id, season_id, episode_id, category_id=None):
+        """Get playable file records for a series episode."""
+
+        params = {
+            'type': 'vod',
+            'action': 'get_ordered_list',
+            'movie_id': str(video_id),
+            'season_id': str(season_id),
+            'episode_id': str(episode_id),
+            'row': '0',
+            'fav': '0',
+            'sortby': 'added',
+            'hd': '0',
+            'not_ended': '0',
+            'p': '1'
+        }
+
+        if category_id is not None:
+            params['category'] = str(category_id)
+
+        response = Api.__call_stalker_portal(params)['js']
+
+        return [
+            item for item in response.get('data', [])
+            if item.get('is_file')
+        ]

@@ -28,22 +28,90 @@ class StalkerAddon:
 
     @staticmethod
     def __play_video(params):
-        """Play video"""
+        """Resolve and play a movie or series episode."""
+
         Logger.debug('Play video {}'.format(params))
-        stream_url = Api.get_vod_stream_url(params['video_id'], params['series'], params.get('cmd', ''), params.get('use_cmd', '0'))
+
+        is_episode = bool(params.get('episode_id'))
+
+        if is_episode:
+            files = Api.get_episode_files(
+                params['video_id'],
+                params['season_id'],
+                params['episode_id'],
+                params.get('category_id')
+            )
+
+            if not files:
+                Logger.error(
+                    'No playable files found for episode {}'.format(
+                        params['episode_id']
+                    )
+                )
+                xbmcplugin.setResolvedUrl(
+                    G.get_handle(),
+                    False,
+                    xbmcgui.ListItem()
+                )
+                return
+
+            # Use the first available file. Multiple file/quality
+            # selection can be added separately.
+            file_record = files[0]
+
+            cmd = file_record.get('cmd', '')
+            if not cmd:
+                Logger.error(
+                    'Playable file has no cmd: {}'.format(file_record)
+                )
+                xbmcplugin.setResolvedUrl(
+                    G.get_handle(),
+                    False,
+                    xbmcgui.ListItem()
+                )
+                return
+
+            stream_url = Api.get_vod_stream_url(
+                file_record['id'],
+                params['series'],
+                cmd,
+                '1'
+            )
+        else:
+            # Preserve the existing movie playback behavior.
+            stream_url = Api.get_vod_stream_url(
+                params['video_id'],
+                params.get('series', '0'),
+                params.get('cmd', ''),
+                params.get('use_cmd', '0')
+            )
+
         play_item = xbmcgui.ListItem(path=stream_url)
         video_info = play_item.getVideoInfoTag()
+
         title = params.get('title', '')
         video_info.setTitle(title)
         video_info.setOriginalTitle(title)
-        video_info.setMediaType('movie')
-        episode_no = get_int_value(params, 'series')
-        if episode_no > 0:
-            video_info.setEpisode(episode_no)
-            video_info.setSeason(get_int_value(params, 'season_no'))
+
+        if is_episode:
             video_info.setMediaType('episode')
-            video_info.setTvShowTitle(title)
-        xbmcplugin.setResolvedUrl(G.get_handle(), True, listitem=play_item)
+            video_info.setEpisode(get_int_value(params, 'series'))
+            video_info.setSeason(get_int_value(params, 'season_no'))
+            video_info.setTvShowTitle(
+                params.get('show_title', title)
+            )
+        else:
+            video_info.setMediaType('movie')
+
+        play_item.setArt({
+            'poster': params.get('poster_url', '')
+        })
+
+        xbmcplugin.setResolvedUrl(
+            G.get_handle(),
+            True,
+            listitem=play_item
+        )
 
     @staticmethod
     def __play_tv(params):
@@ -232,34 +300,84 @@ class StalkerAddon:
 
     @staticmethod
     def __list_season(params):
-        """List season"""
-        xbmcplugin.setPluginCategory(G.get_handle(), params['name'])
+        """List seasons for a series."""
+
+        show_title = params['name']
+        video_id = params['video_id']
+        category_id = params.get('category_id')
+
+        xbmcplugin.setPluginCategory(G.get_handle(), show_title)
         xbmcplugin.setContent(G.get_handle(), 'videos')
-        seasons = Api.get_seasons(params['video_id'])
+
+        seasons = Api.get_series_items(
+            video_id,
+            season_id=0,
+            category_id=category_id,
+            page=1
+        )
+
         directory_items = []
-        for season in seasons['data']:
-            label = season['name']
-            list_item = xbmcgui.ListItem(label=label, label2=label)
-            match = re.match("^Season [0-9]+$", season['name'])
-            name = params['name'] + ' ' + season['name']
-            if match:
-                temp = season['name'].split(' ')
-                name = params['name'] + ' S' + temp[-1]
-            url = G.get_plugin_url({'action': 'sub_folder', 'video_id': season['id'], 'start': season['series'][0],
-                                    'end': season['series'][-1], 'name': name, 'poster_url': params['poster_url']})
+
+        for season in seasons.get('data', []):
+            season_id = season['id']
+            season_number = season.get('season_number', '')
+            season_title = season.get('name') or season.get('season_name', 'Season')
+
+            list_item = xbmcgui.ListItem(
+                label=season_title,
+                label2=season_title
+            )
+
+            url = G.get_plugin_url({
+                'action': 'sub_folder',
+                'video_id': video_id,
+                'season_id': season_id,
+                'season_no': season_number,
+                'category_id': category_id,
+                'name': season_title,
+                'show_title': show_title,
+                'poster_url': params.get('poster_url', '')
+            })
+
             video_info = list_item.getVideoInfoTag()
             video_info.setMediaType('season')
-            video_info.setTitle(season['name'])
-            video_info.setOriginalTitle(season['name'])
-            video_info.setSortTitle(season['name'])
-            video_info.setPlot(season.get('description', ''))
-            video_info.setPlotOutline(season.get('description', ''))
-            actors = [xbmc.Actor(actor) for actor in season['actors'].split(',') if actor]  # pylint: disable=maybe-no-member
+            video_info.setTitle(season_title)
+            video_info.setOriginalTitle(season_title)
+            video_info.setSortTitle(season_title)
+
+            video_info.setSeason(get_int_value(
+                season, 'season_number'
+            ))
+
+            description = season.get('description', '')
+            video_info.setPlot(description)
+            video_info.setPlotOutline(description)
+
+            actors = [
+                xbmc.Actor(actor.strip())
+                for actor in season.get('actors', '').split(',')
+                if actor.strip()
+            ]
             video_info.setCast(actors)
-            list_item.setArt({'poster': params['poster_url']})
+
+            list_item.setArt({
+                'poster': params.get('poster_url', '')
+            })
+
             directory_items.append((url, list_item, True))
-        xbmcplugin.addDirectoryItems(G.get_handle(), directory_items, len(seasons['data']))
-        xbmcplugin.endOfDirectory(G.get_handle(), succeeded=True, updateListing=False, cacheToDisc=False)
+
+        xbmcplugin.addDirectoryItems(
+            G.get_handle(),
+            directory_items,
+            len(directory_items)
+        )
+
+        xbmcplugin.endOfDirectory(
+            G.get_handle(),
+            succeeded=True,
+            updateListing=False,
+            cacheToDisc=False
+        )    
 
     @staticmethod
     def __create_video_listing(videos, params):
@@ -287,13 +405,41 @@ class StalkerAddon:
                 else:
                     poster_url = G.portal_config.portal_base_url + video['screenshot_uri']
             video_info = list_item.getVideoInfoTag()
-            if video['series']:
-                url = G.get_plugin_url({'action': 'sub_folder', 'video_id': video['id'], 'start': video['series'][0], 'end': video['series'][-1],
-                                        'name': video['name'], 'poster_url': poster_url})
+
+            if video.get('series'):
+                # Existing behavior: this item has an episode range.
+                url = G.get_plugin_url({
+                    'action': 'sub_folder',
+                    'video_id': video['id'],
+                    'start': video['series'][0],
+                    'end': video['series'][-1],
+                    'name': video['name'],
+                    'poster_url': poster_url
+                })
                 is_folder = True
                 video_info.setMediaType('season')
+
+            elif str(video.get('is_series', '0')) == '1':
+                # Some portals identify series via is_series even when
+                # the series array is empty.
+                url = G.get_plugin_url({
+                    'action': 'season_listing',
+                    'video_id': video['id'],
+                    'name': video['name'],
+                    'poster_url': poster_url
+                })
+                is_folder = True
+                video_info.setMediaType('season')
+
             else:
-                url = G.get_plugin_url({'action': 'play', 'video_id': video['id'], 'series': 0, 'title': video['name'], 'cmd': video.get('cmd', '')})
+                # Ordinary movie: retain the existing playback behavior.
+                url = G.get_plugin_url({
+                    'action': 'play',
+                    'video_id': video['id'],
+                    'series': 0,
+                    'title': video['name'],
+                    'cmd': video.get('cmd', '')
+                })
                 time = get_int_value(video, 'time')
                 if time != 0:
                     video_info.setDuration(time * 60)
@@ -350,9 +496,9 @@ class StalkerAddon:
                 else:
                     poster_url = G.portal_config.portal_base_url + video['screenshot_uri']
             video_info = list_item.getVideoInfoTag()
-            url = G.get_plugin_url({'action': 'season_listing', 'video_id': video['id'], 'name': video['name'], 'poster_url': poster_url})
-            video_info.setMediaType('season')
+            url = G.get_plugin_url({'action': 'season_listing','video_id': video['id'],'category_id': params['category_id'],'name': video['name'],'poster_url': poster_url})
 
+            video_info.setMediaType('season')
             video_info.setTitle(video['name'])
             video_info.setOriginalTitle(video['name'])
             video_info.setSortTitle(video['name'])
@@ -410,37 +556,87 @@ class StalkerAddon:
 
     @staticmethod
     def __list_episodes(params):
-        """List episodes for a series"""
-        name = params['name']
-        xbmcplugin.setPluginCategory(G.get_handle(), name)
-        xbmcplugin.setContent(G.get_handle(), 'videos')
-        temp = name.split(' ')
-        match = re.match("^S[0-9]+$", temp[-1])
-        season = None
-        if match:
-            season = int(match.string[1:])
-            name = ' '.join(temp[:-1])
-        start = get_int_value(params, 'start')
-        end = get_int_value(params, 'end')
-        for episode_no in range(start, end + 1):
-            list_item = xbmcgui.ListItem(label='Episode ' + str(episode_no))
+        """List actual episodes in a selected season."""
+
+        video_id = params['video_id']
+        season_id = params['season_id']
+        category_id = params.get('category_id')
+        show_title = params.get('show_title', params['name'])
+        season_number = get_int_value(params, 'season_no')
+        poster_url = params.get('poster_url', '')
+
+        xbmcplugin.setPluginCategory(
+            G.get_handle(),
+            params['name']
+        )
+        xbmcplugin.setContent(G.get_handle(), 'episodes')
+
+        episodes = Api.get_series_items(
+            video_id,
+            season_id=season_id,
+            category_id=category_id,
+            page=1
+        )
+
+        directory_items = []
+
+        for episode in episodes.get('data', []):
+            # Ignore unexpected records that aren't episodes.
+            if not episode.get('is_episode'):
+                continue
+
+            episode_id = episode['id']
+            episode_number = get_int_value(episode, 'series_number')
+            episode_title = episode.get('name') or episode.get(
+                'series_name', 'Episode {}'.format(episode_number)
+            )
+
+            list_item = xbmcgui.ListItem(
+                label=episode_title,
+                label2=episode_title
+            )
+
             video_info = list_item.getVideoInfoTag()
-            video_info.setTitle(name)
-            video_info.setOriginalTitle(name)
-            if match:
-                video_info.setEpisode(episode_no)
-                video_info.setSeason(season)
-                video_info.setSortSeason(season)
-                video_info.setMediaType('episode')
-                video_info.setTvShowTitle(name)
-            else:
-                video_info.setMediaType('movie')
-            list_item.setProperties({'IsPlayable': 'true'})
-            list_item.setArt({'poster': params['poster_url']})
-            url = G.get_plugin_url({'action': 'play', 'video_id': params['video_id'], 'series': episode_no, 'season_no': season,
-                                    'title': name, 'total_episodes': end, 'poster_url': params['poster_url']})
-            xbmcplugin.addDirectoryItem(G.get_handle(), url, list_item, False)
-        xbmcplugin.endOfDirectory(G.get_handle(), succeeded=True, updateListing=False, cacheToDisc=False)
+            video_info.setMediaType('episode')
+            video_info.setTitle(episode_title)
+            video_info.setOriginalTitle(
+                episode.get('series_original_name', episode_title)
+            )
+            video_info.setTvShowTitle(show_title)
+            video_info.setSeason(season_number)
+            video_info.setEpisode(episode_number)
+            video_info.setSortSeason(season_number)
+
+            list_item.setArt({'poster': poster_url})
+            list_item.setProperty('IsPlayable', 'true')
+
+            url = G.get_plugin_url({
+                'action': 'play',
+                'video_id': video_id,
+                'season_id': season_id,
+                'episode_id': episode_id,
+                'category_id': category_id,
+                'series': episode_number,
+                'season_no': season_number,
+                'title': episode_title,
+                'show_title': show_title,
+                'poster_url': poster_url
+            })
+
+            directory_items.append((url, list_item, False))
+
+        xbmcplugin.addDirectoryItems(
+            G.get_handle(),
+            directory_items,
+            len(directory_items)
+        )
+
+        xbmcplugin.endOfDirectory(
+            G.get_handle(),
+            succeeded=True,
+            updateListing=False,
+            cacheToDisc=False
+        )
 
     def __search_vod(self, params):
         """Search for videos"""
